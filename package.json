@@ -1,0 +1,49 @@
+{
+  "name": "dsh-matrix-todo",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Eisenhower-matrix to-do list for DeepSeek Harness: four importance/urgency quadrants, drag sorting, due dates, completed view and minimal theme-aware styling.",
+  "license": "MIT",
+  "author": "Zhang-Eli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zhang-Eli/dsh-matrix-todo.git"
+  },
+  "homepage": "https://github.com/Zhang-Eli/dsh-matrix-todo#readme",
+  "bugs": {
+    "url": "https://github.com/Zhang-Eli/dsh-matrix-todo/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "lib/",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-sidebar"
+      ]
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# Eisenhower-matrix to-do list: one sidebar entry, one main panel, and a
+# file-backed store served through /matrix-todo/api.
+- insert:
+    - id: matrix-todo
+      name: dsh-matrix-todo
