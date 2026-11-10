@@ -83,6 +83,13 @@ window.__ModuleLoader__.load({
       'item.due.overdue': 'Overdue',
       'item.drag': 'Drag to reorder or move to another quadrant',
       'item.edit': 'Double-click to edit',
+      'seed.add': 'Click an empty spot or "+ Add" to create a to-do',
+      'seed.drag': 'Drag a to-do to reorder it or move it to another quadrant',
+      'seed.edit': 'Double-click the text to edit it',
+      'seed.split': 'Drag the center dot to resize quadrants; double-click resets',
+      'seed.settings': 'Use the gear to change border, tint, font size, urgent side',
+      'seed.overdue': 'Overdue items turn red',
+      'seed.date': 'Date panel: single-click to preview, double-click to confirm',
       'quickAdd.due': 'Due date',
       'toast.praise.1': 'Well done! Right on time.',
       'toast.praise.2': 'Nice — done before the deadline.',
@@ -167,6 +174,13 @@ window.__ModuleLoader__.load({
       'item.due.overdue': '已逾期',
       'item.drag': '拖动可排序，或移到其他象限',
       'item.edit': '双击编辑',
+      'seed.add': '点空白处或「＋ 添加」新增待办',
+      'seed.drag': '拖拽待办可在象限内排序，或移到别的象限',
+      'seed.edit': '双击待办文字即可编辑',
+      'seed.split': '拖动中心圆点调整象限大小，双击复位',
+      'seed.settings': '右上角齿轮可改边框、底色、字号、紧急方向',
+      'seed.overdue': '未按期完成的待办会变红',
+      'seed.date': '日期面板：单击选择，双击确定',
       'quickAdd.due': '截止日期',
       'toast.praise.1': 'Well done! 按期完成',
       'toast.praise.2': '漂亮，正好赶上',
@@ -318,6 +332,30 @@ window.__ModuleLoader__.load({
       if (parts.length !== 3) return key;
       const year = Number(parts[0]);
       return year === new Date().getFullYear() ? parts[1] + '-' + parts[2] : key;
+    }
+
+    /** Day key `offset` days from today (negative = past). */
+    function dayKeyOffset(offset) {
+      const date = new Date();
+      date.setDate(date.getDate() + offset);
+      return dayKeyOf(date);
+    }
+
+    /**
+     * First-run guide rows, sent once to the Host with localized titles. They
+     * demonstrate all four quadrants, including an overdue row and a date-picker
+     * row; the Host flag makes them one-shot, so deleting them sticks.
+     */
+    function seedItems(t) {
+      return [
+        { title: t('seed.add'), important: true, urgent: true },
+        { title: t('seed.drag'), important: true, urgent: false },
+        { title: t('seed.edit'), important: true, urgent: false },
+        { title: t('seed.split'), important: true, urgent: false },
+        { title: t('seed.settings'), important: false, urgent: true },
+        { title: t('seed.overdue'), important: false, urgent: true, dueDate: dayKeyOffset(-3) },
+        { title: t('seed.date'), important: false, urgent: false, dueDate: dayKeyOffset(30) },
+      ];
     }
 
     /** `overdue` / `today` / `future` for an open todo's due date. */
@@ -1413,14 +1451,19 @@ window.__ModuleLoader__.load({
 
       const load = useCallback(async () => {
         try {
-          applyResult(await fetchApi('list'));
+          let result = await fetchApi('list');
+          // Brand-new store: ask the Host to write the localized guide rows once.
+          if (result.seeded === false && Array.isArray(result.todos) && result.todos.length === 0) {
+            result = await fetchApi('seed', { items: seedItems(t) });
+          }
+          applyResult(result);
         } catch (err) {
           setError(messageOf(err));
           setTodos((current) => (current === null ? [] : current));
         } finally {
           setLoaded(true);
         }
-      }, [applyResult, messageOf]);
+      }, [applyResult, messageOf, t]);
 
       useEffect(() => {
         void load();

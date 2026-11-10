@@ -63,6 +63,7 @@ function refusalOf(ctx, req) {
 
 const ACTIONS = {
   list: (store) => store.list(),
+  seed: (store, body) => store.seed(body),
   create: (store, body) => store.create(body),
   update: (store, body) => store.update(body),
   toggle: (store, body) => store.toggle(body),
@@ -73,7 +74,7 @@ const ACTIONS = {
 
 /** Every response carries the full list plus the layout preferences. */
 function resultOf(store) {
-  return { todos: store.list(), settings: store.settings() }
+  return { todos: store.list(), settings: store.settings(), seeded: store.seeded() }
 }
 
 export function apply(ctx, config = {}) {

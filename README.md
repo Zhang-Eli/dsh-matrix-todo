@@ -3,6 +3,7 @@
 DeepSeek Harness 的侧栏待办插件：主界面是艾森豪威尔矩阵（重要 × 紧急四个象限），可一键切换到「已完成」；数据与界面设置写入本机 profile 下的一个 JSON 文件。
 
 - 侧边栏新增入口「四象限待办」，排在自带「待办」之后
+- 首次打开且清单为空时，自动写入一组本地化引导条目（覆盖四个象限、逾期变色与日期面板）；删掉后不会再出现
 - 矩阵视图：立即做 / 计划做 / 委托做 / 别做，四个象限自动撑满面板、各自计数
 - 拖动四象限中心的圆点即可调整行/列比例，双击圆点恢复均分
 - 每个象限都能直接点击空白处或底部「＋ 添加」就地新增，可为该条设置截止日期
@@ -149,11 +150,14 @@ plugin_manager install_bundle  target: <本目录绝对路径>
     "rowRatio": 0.5,
     "navLabel": ""
   },
-  "reordered": false
+  "reordered": false,
+  "seeded": true
 }
 ```
 
 `todos` 的数组顺序就是同象限内的显示顺序。`reordered` 为 `false` 时顺序按创建时间倒序派生（新条目在前）；一旦手动拖拽排序，它就变成 `true`，此后数组顺序即你的顺序。`dueDate` 为 `YYYY-MM-DD` 或 `null`。
+
+`seeded` 表示首次使用引导只写过一次：面板首次打开且清单为空时，会按当前界面语言向 Host 提交 7 条引导待办，Host 写入后把 `seeded` 置为 `true`。之后即使把引导全部删掉，也不会再自动生成。
 
 写盘是「临时文件 + rename」的原子替换，写操作串行排队；文件损坏时会先备份为 `todos.corrupt-<时间戳>.json`，再以空清单 + 默认设置启动。手改文件里的 `settings` 非法值会被忽略并回落到默认值。
 
@@ -172,6 +176,7 @@ Host 半在 `/matrix-todo/api` 注册 prefix 路由，只接受 POST，并做同
 | 方法 | body | 说明 |
 | --- | --- | --- |
 | `list` | `{}` | 取全部待办与设置 |
+| `seed` | `{ items: [{ title, important, urgent, dueDate? }] }` | 首次使用引导：仅在 `seeded` 为 `false` 时写入，幂等 |
 | `create` | `{ title, important, urgent, dueDate? }` | 新建 |
 | `update` | `{ id, title?, important?, urgent?, dueDate? }` | 改字段（含象限标记、截止日期；`dueDate: null` 清除） |
 | `toggle` | `{ id }` | 完成 / 恢复 |
@@ -180,7 +185,7 @@ Host 半在 `/matrix-todo/api` 注册 prefix 路由，只接受 POST，并做同
 | `clearCompleted` | `{}` | 清空已完成 |
 | `saveSettings` | `{ urgentSide?, frame?, radius?, tint?, fontSize?, dueFormat?, titleStyle?, colRatio?, rowRatio?, navLabel? }` | 合并保存界面设置 |
 
-成功返回 `{ ok: true, result: { todos, settings } }`；失败返回 `{ ok: false, error: { code, message } }`，状态码 `invalid-input` 400 / `not-found` 404 / `io-error` 500。标题去空白后 1–200 字符，清单上限 500 条，圆角 0–24 整数，字号 11–17 整数，`dueDate` 必须是真实存在的 `YYYY-MM-DD` 日期。
+成功返回 `{ ok: true, result: { todos, settings, seeded } }`；失败返回 `{ ok: false, error: { code, message } }`，状态码 `invalid-input` 400 / `not-found` 404 / `io-error` 500。标题去空白后 1–200 字符，清单上限 500 条，圆角 0–24 整数，字号 11–17 整数，`dueDate` 必须是真实存在的 `YYYY-MM-DD` 日期。
 
 ## 文件结构
 

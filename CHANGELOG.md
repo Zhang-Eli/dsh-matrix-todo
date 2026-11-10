@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0
+
+- First-run guide: when the panel opens on an empty store, the client sends
+  seven localized onboarding to-dos (one per interaction: add, drag, edit,
+  quadrant split, settings, overdue coloring, date picker). The Host writes
+  them once behind a new `seeded` flag, so deleting the guide never brings it
+  back; an existing list is treated as already seeded (no duplicates for
+  upgrades).
+- New `seed` API action: idempotent, accepts localized titles from the client,
+  validates them like any other create, and stamps their own creation order.
+
 ## 1.0.1
 
 - Drop the module-level window guard so the client bundle re-registers after

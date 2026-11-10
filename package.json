@@ -1,6 +1,6 @@
 {
   "name": "dsh-matrix-todo",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "type": "module",
   "description": "Eisenhower-matrix to-do list for DeepSeek Harness: four importance/urgency quadrants, drag sorting, due dates, completed view and minimal theme-aware styling.",
   "license": "MIT",
