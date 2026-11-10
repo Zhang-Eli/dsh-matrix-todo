@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+- Drop the module-level window guard so the client bundle re-registers after
+  hot reload or after the plugin row is disabled and enabled again (the loader
+  already de-duplicates by bundle URL).
+
 ## 1.0.0
 
 First public release.
