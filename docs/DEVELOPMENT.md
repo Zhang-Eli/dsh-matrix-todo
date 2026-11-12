@@ -17,7 +17,7 @@
 | 数据文件 | `%DSH_PROFILE_DIR%/data/dsh-matrix-todo/todos.json`（本机现 5 条、`seeded: true`、默认设置） |
 | 校验基线 | 三个 JS 文件 `node --check` 通过；EN/ZH 字典各 87 键；CSS 花括号配平 0；store 冒烟 9 项通过（见第 3 节） |
 | 门禁 | 1.1.0 时 0 error / 5 warn / 2 info，`safeToPublish: true` |
-| 市场 PR | **未提交**：awesome-dsh-plugin 要求仓库创建满 24h（2026-11-11 16:01 北京时间后），已挂定时任务 `schedule-3756fd9f-2999-4e8d-90cf-0fa663b95bc6` 于 16:05 开新会话处理 |
+| 市场条目 | 已上架：PR #14253 已合并（`category: ui`，网站显示在 **UI Enhancements**）。分类应为 `tools`，修正 PR **#14477** 已开、待合并 |
 
 ## 2. 架构地图
 
@@ -109,12 +109,13 @@ plugin_manager set_bundle target=dsh-matrix-todo enabled=true
 - **不要直接改运行中的数据文件**：先 `set_bundle enabled=false` → 写 `todos.json` → `enabled=true`，`apply()` 里的 `store.load()` 会重读。HTTP 接口对非 GUI 请求返回 403（同源护栏，预期行为），不要试图绕过。
 - **引导待办由 Client 生成文案**：Host 不知道 UI 语言；`list` 返回 `seeded`，Client 在 `seeded === false && todos.length === 0` 时调 `seed`。Host 侧 `seeded` 只写一次；旧数据文件（有行但无该字段）视为已引导，升级不会重复插入。
 - **样式只用 `--dsw-alias-*` token**：极简风靠 token + `color-mix`，不要写死颜色；象限底色的 `tint: 'soft'` 就是从 token 混色。
+- **市场分类只由市场条目的 `category` 决定**：站点标签在 awesome-dsh-plugin 的 `site/locales.mjs` 里映射（`ui → UI Enhancements`、`tools → Tools & Capabilities`、`dev`/`workflow`/`git` 等同理）。分类写错与 npm 版本无关，只能改上游仓库 `data/plugins/<owner>__<repo>.yml` 再开 PR；本地副本放在工作区根，别只改本地。
 - **locale JSON 只有 meta**：新增 UI 文案加在 `client.js` 的 `EN`/`ZH`，并保持两边键集合一致（各 87 键现状）。
 - **卫生**：`lib/` 内所有用户输入在改内存前 sanitize；写盘失败进入 `sealed` 状态，避免损坏文件被覆盖。
 
 ## 6. 已知限制与下一步候选
 
-- [ ] **市场 PR 未提交**，阻塞条件：仓库创建满 24h（2026-11-11 16:01 CST 之后）。条目文件已备好在工作区根 `Zhang-Eli__dsh-matrix-todo.yml`，已过 `checkMarketEntry`。定时任务 `schedule-3756fd9f-2999-4e8d-90cf-0fa663b95bc6` 于 16:05 自动执行。
+- [ ] **市场分类修正 PR #14477 待合并**：把 `data/plugins/Zhang-Eli__dsh-matrix-todo.yml` 的 `category: ui` 改成 `tools`（站点标签 `ui → UI Enhancements`、`tools → Tools & Capabilities`）。合并后网站自动更新，不需要发 npm 版本。本地副本在工作区根 `Zhang-Eli__dsh-matrix-todo.yml` 已同步为 `tools`。
 - [ ] **没有提交到仓库的测试**：现有校验都是临时脚本（第 3 节可复制）。若要长期维护，建议把 store 冒烟固化成 `test/store.test.mjs` 用 `node --test` 跑。
 - [ ] `seed` 的 Host 侧护栏只认 `seeded` 标志：若某天出现「文件有 todo 但 seeded 为 false」的中间态（例如外部手写数据），Client 因 `todos.length > 0` 不会触发，但直接调接口仍可追加。如需更强保证，可在 `store.seed()` 里也加 `state.todos.length > 0` 的短路。
 - [ ] 待办上限 500 条（`MAX_TODOS`），超出返回 `invalid-input`；面板未做专门的「已达上限」提示，只在消息区显示错误。
